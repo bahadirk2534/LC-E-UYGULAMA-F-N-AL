@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Let's Continue In English - Canlı Platform</title>
+
+  <!-- Mobil Uygulama Kurulum Etiketleri -->
+  <meta name="theme-color" content="#06b6d4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LCIE" />
+  <link id="apple-icon" rel="apple-touch-icon" href="" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-btn:active, button:active { transform: scale(0.97); }
+    .expandable-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease; }
+    .expanded { max-height: 350px; padding-top: 0.5rem; border-top: 1px solid #f1f5f9; margin-top: 0.5rem; } 
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col relative">
+
+  <!-- ================= IYZICO ÖDEME SİMÜLASYONU MODALI ================= -->
+  <div id="iyzico-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+      <div class="bg-blue-600 p-4 text-center">
+        <h3 class="text-white font-black text-xl tracking-wide flex items-center justify-center gap-2">
+          💳 iyzico <span class="text-[10px] bg-blue-800 px-2 py-0.5 rounded-full font-normal">Güvenli Ödeme</span>
+        </h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="text-center mb-4 border-b border-slate-100 pb-4">
+          <p class="text-xs text-slate-400 font-bold uppercase mb-1">Satın Alınan Paket</p>
+          <h4 id="iyzico-package-name" class="text-lg font-black text-slate-800 leading-tight">Paket Adı</h4>
+          <div id="iyzico-price" class="text-3xl font-black text-blue-600 mt-2">0 TL</div>
+        </div>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Kart Üzerindeki İsim</label>
+            <input type="text" placeholder="Ad Soyad" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="Test Kullanıcısı">
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Kart Numarası</label>
+            <input type="text" placeholder="0000 0000 0000 0000" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="4321 0000 0000 0000" maxlength="19">
+          </div>
+          <div class="flex gap-3">
+            <div class="w-1/2">
+              <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Son K. Tarihi</label>
+              <input type="text" placeholder="AA/YY" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="12/28" maxlength="5">
+            </div>
+            <div class="w-1/2">
+              <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">CVV</label>
+              <input type="password" placeholder="123" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" value="123" maxlength="3">
+            </div>
+          </div>
+        </div>
+
+        <button onclick="simulateIyzicoPayment()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-md mt-4 flex justify-center items-center gap-2 transition hover:bg-blue-700">
+          <span id="iyzico-btn-text">Ödemeyi Tamamla</span> 🔒
+        </button>
+        <button onclick="closeIyzicoModal()" class="w-full text-xs font-bold text-slate-500 pt-2 pb-1 hover:text-slate-800 transition">İptal Et ve Geri Dön</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= AUTH EKRANI ================= -->
+  <div id="auth-container" class="flex-1 flex flex-col items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm p-8 rounded-3xl shadow-xl border border-slate-100 text-center">
+      <div class="w-16 h-16 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">🚀</div>
+      <h1 id="auth-title" class="text-2xl font-black text-cyan-600 mb-1">Hoş Geldiniz</h1>
+      <p id="auth-subtitle" class="text-xs text-slate-400 mb-6">Canlı Eğitim Platformu</p>
+      <div id="auth-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 text-xs rounded-2xl font-bold"></div>
+      
+      <div class="space-y-4 text-left">
+        <input type="email" id="authEmail" class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-sm focus:ring-2 focus:ring-cyan-500 outline-none" placeholder="E-Posta">
+        <input type="password" id="authPassword" class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-sm focus:ring-2 focus:ring-cyan-500 outline-none" placeholder="Şifre">
+        
+        <div id="register-role-box" class="hidden">
+          <select id="authRoleSelect" class="w-full px-4 py-3 border border-slate-300 rounded-2xl text-sm outline-none">
+            <option value="student">Öğrenci</option>
+            <option value="teacher">Eğitmen</option>
+          </select>
+        </div>
+        <button onclick="handleAuthAction()" id="authSubmitBtn" class="w-full bg-cyan-500 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md mt-2 transition hover:bg-cyan-600">Giriş Yap</button>
+        <button onclick="toggleAuthMode()" id="authToggleBtn" class="w-full text-xs font-bold text-cyan-600 mt-2 hover:underline">Hesabınız yok mu? Kayıt Olun</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ANA UYGULAMA EKRANI ================= -->
+  <div id="app-container" class="hidden flex-col h-full pb-20">
+    <header class="bg-white px-4 py-3 flex justify-between items-center border-b-2 border-cyan-500 sticky top-0 z-40 shadow-sm">
+      <h1 class="text-sm font-extrabold text-slate-800">Let's Continue In English</h1>
+      <div class="flex items-center gap-3">
+        <span id="header-user-email" class="text-[10px] font-bold text-slate-500 hidden sm:block"></span>
+        <button onclick="handleLogout()" class="text-[10px] bg-red-50 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition hover:bg-red-100">Çıkış Yap</button>
+      </div>
+    </header>
+
+    <nav class="bg-white border-b border-slate-200 px-4 py-2 flex gap-2 overflow-x-auto text-xs font-bold text-slate-600 sticky top-[49px] z-30">
+      <button onclick="switchTab('dashboard')" class="tab-btn bg-cyan-500 text-white px-3 py-1.5 rounded-xl shadow-sm" id="btn-dashboard">📊 Özet</button>
+      <button onclick="switchTab('calendar')" class="tab-btn bg-slate-100 px-3 py-1.5 rounded-xl whitespace-nowrap transition hover:bg-slate-200" id="btn-calendar">📅 Takvim & Slot</button>
+      <button onclick="switchTab('homework')" class="tab-btn bg-slate-100 px-3 py-1.5 rounded-xl whitespace-nowrap transition hover:bg-slate-200" id="btn-homework">📚 Ödev & Materyal</button>
+      <button onclick="switchTab('chat')" class="tab-btn bg-slate-100 px-3 py-1.5 rounded-xl whitespace-nowrap transition hover:bg-slate-200" id="btn-chat">💬 7/24 Soru</button>
+      <button onclick="switchTab('shop')" class="tab-btn bg-slate-100 px-3 py-1.5 rounded-xl whitespace-nowrap transition hover:bg-slate-200" id="btn-shop">🎁 Paketler</button>
+    </nav>
+
+    <main class="p-4 max-w-2xl mx-auto w-full space-y-4">
+
+      <!-- 1. AKILLI ÖZET PANELİ (DASHBOARD) -->
+      <div id="tab-dashboard" class="space-y-4">
+        <!-- ÖĞRENCİ ÖZETİ -->
+        <div id="student-dashboard-view" class="space-y-4 hidden">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-2">📅 Güncel Randevularım</h4>
+              <div id="st-dash-appointments" class="space-y-2 text-xs"></div>
+            </div>
+            
+            <div onclick="toggleExpand('st-chat-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:bg-slate-50 transition">
+              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-2">💬 7/24 Soru Durumu (Tıkla)</h4>
+              <div id="st-dash-chat-status" class="text-xs font-bold p-3 rounded-xl bg-slate-50 border border-slate-100 text-center"></div>
+              <div id="st-chat-detail" class="expandable-detail text-[10px] text-slate-600 text-center"></div>
+            </div>
+
+            <div onclick="toggleExpand('st-hw-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:bg-slate-50 transition">
+              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-2">📚 Ödev & Materyal (Tıkla)</h4>
+              <div id="st-dash-hw-status" class="text-xs font-bold p-3 rounded-xl bg-slate-50 border border-slate-100 text-center"></div>
+              <div id="st-hw-detail" class="expandable-detail text-[10px] text-slate-600"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-1">📊 Aylık İlerleme</h4>
+              <h3 class="text-lg font-black text-slate-800 mb-2"><span id="st-dash-completed">0</span> / <span id="st-dash-total">10</span> Ders İşlendi</h3>
+              <div id="st-dash-warning" class="hidden text-[10px] font-bold text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">⚠️ Bu hafta ders işlemedik. Uygun randevunu oluştur!</div>
+            </div>
+          </div>
+          <div class="bg-gradient-to-r from-teal-500 to-emerald-600 p-5 rounded-3xl shadow-md text-white text-center">
+            <h4 class="text-xs font-bold uppercase mb-3 opacity-90">Sıradaki Dersin Vakti Geldiğinde</h4>
+            <a id="studentLiveLink" href="#" target="_blank" class="block w-full bg-white text-teal-800 font-extrabold py-3.5 rounded-2xl text-sm shadow-md transition hover:bg-slate-100">🚀 DERSE BAĞLAN (Link Bekleniyor)</a>
+          </div>
+        </div>
+
+        <!-- EĞİTMEN ÖZETİ -->
+        <div id="teacher-dashboard-view" class="space-y-4 hidden">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 sm:col-span-2">
+              <h4 class="text-[10px] font-bold text-purple-700 uppercase mb-2">📅 Yaklaşan Öğrenci Randevuları</h4>
+              <div id="tc-dash-appointments" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
+            </div>
+            
+            <div onclick="toggleExpand('tc-chat-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition">
+              <h4 class="text-[10px] font-bold text-purple-700 uppercase mb-2">💬 Soru Bildirimleri (Tıkla)</h4>
+              <div id="tc-dash-chat-status" class="text-xs font-bold p-3 rounded-xl bg-purple-50 text-purple-800 border border-purple-100 text-center"></div>
+              <div id="tc-chat-detail" class="expandable-detail text-[10px] text-slate-600 text-center"></div>
+            </div>
+
+            <div onclick="toggleExpand('tc-hw-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition">
+              <h4 class="text-[10px] font-bold text-purple-700 uppercase mb-2">📚 Ödev Takip (Tıkla)</h4>
+              <div id="tc-dash-hw-status" class="text-xs font-bold p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100 text-center"></div>
+              <div id="tc-hw-detail" class="expandable-detail text-[10px] text-slate-600"></div>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+            <h4 class="text-[10px] font-bold text-slate-700 uppercase">🔗 Randevusu Gelen Öğrenciye Link Ekle</h4>
+            <div id="tc-dash-link-add" class="space-y-2 text-xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. TAKVİM PANELİ -->
+      <div id="tab-calendar" class="space-y-4 hidden">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="font-extrabold text-sm text-slate-800">Aylık Takvim Görünümü</span>
+            <span class="text-[10px] font-bold text-emerald-600">🟢 = Müsait</span>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
+            <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+          </div>
+          <div id="calendar-days-grid" class="grid grid-cols-7 gap-2 text-center text-xs font-semibold mt-2"></div>
+        </div>
+        
+        <div id="teacher-slot-create-card" class="bg-purple-50 border border-purple-100 p-4 rounded-3xl space-y-3 hidden">
+          <h4 class="text-xs font-bold text-purple-900 uppercase">➕ Seçili Güne Ders Slotu Aç</h4>
+          <div class="flex gap-2">
+            <input type="time" id="newSlotTimeInput" class="flex-1 px-3 py-2 border rounded-xl text-xs bg-white outline-none">
+            <button onclick="createCustomSlot()" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition hover:bg-purple-700">Slot Aç</button>
+          </div>
+        </div>
+        
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+          <h4 id="selected-day-title" class="text-xs font-bold text-slate-700 uppercase">Seçili Günün Slotları</h4>
+          <div id="slots-container" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- 3. ÖDEV & MATERYAL PANELİ -->
+      <div id="tab-homework" class="space-y-4 hidden">
+        <div id="student-materials-view" class="space-y-3 hidden">
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+            <h4 class="text-xs font-bold text-slate-700 uppercase">📚 Bana Atanan Ödev ve Materyaller</h4>
+            <div id="student-materials-list" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <div id="teacher-students-view" class="space-y-4 hidden">
+          <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+            <h4 class="text-xs font-bold text-purple-800 uppercase">👩‍🎓 Tüm Öğrencilerim & Durumları</h4>
+            <div id="teacher-students-list" class="space-y-2"></div>
+          </div>
+          
+          <div id="teacher-assign-panel" class="bg-purple-50 border border-purple-100 p-4 rounded-3xl space-y-3 hidden">
+            <h4 class="text-xs font-bold text-purple-900 uppercase">📌 <span id="assign-target-email"></span>'a Materyal Ata</h4>
+            <div class="flex gap-2">
+              <select id="assignType" class="w-1/3 px-3 py-2 border rounded-xl text-xs outline-none">
+                <option value="pdf">📄 PDF</option><option value="video">🎥 Video</option><option value="homework">✍️ Ödev</option>
+              </select>
+              <input type="text" id="assignTitle" placeholder="Başlık" class="w-2/3 px-3 py-2 border rounded-xl text-xs outline-none">
+            </div>
+            <input type="text" id="assignLink" placeholder="Dosya Linki veya Ödev Açıklaması" class="w-full px-3 py-2 border rounded-xl text-xs outline-none">
+            <button onclick="assignMaterial()" class="w-full bg-purple-600 text-white font-bold py-2 rounded-xl text-xs transition hover:bg-purple-700">🚀 Öğrenciye Gerçekten Gönder</button>
+            
+            <div class="mt-4 border-t border-purple-200 pt-3">
+              <h5 class="text-[10px] font-bold text-purple-800 uppercase mb-2">Bu Öğrenciye Atadığım Mevcut Materyaller:</h5>
+              <div id="teacher-assigned-list" class="space-y-2 text-xs"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 7/24 SORU PANELİ -->
+      <div id="tab-chat" class="space-y-4 hidden">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[400px]">
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-100"><span class="font-bold text-xs text-slate-700">💬 Soru Akışı</span></div>
+          <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 bg-cyan-50/20 text-xs"></div>
+          <div class="p-3 bg-white border-t flex gap-2">
+            <input type="text" id="chatInputText" placeholder="Mesajınızı yazın..." class="flex-1 px-3 py-2 border rounded-2xl text-xs outline-none">
+            <button onclick="sendMessage()" class="bg-cyan-500 text-white font-bold px-4 py-2 rounded-2xl text-xs transition hover:bg-cyan-600">Gönder</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. PAKETLER -->
+      <div id="tab-shop" class="space-y-3 hidden">
+        
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <span class="text-[9px] bg-indigo-100 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full">Başlangıç Sınıfı</span>
+          <h4 class="font-extrabold text-slate-800 text-sm">A1 Seviye</h4>
+          <p class="text-[11px] text-slate-500 font-bold">8 Hafta - 2 Ay</p>
+          <p class="text-xs text-slate-600">Haftada 2 Ders (40 Dk) + Haftada 1 Speaking Club (35 Dk)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 7.000 TL <br><span class="text-[10px] text-slate-400 font-normal">Toplam: 14.000 TL</span></strong>
+            <button type="button" onclick="buyPackage(24, '14.000', 'A1 Seviye')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <span class="text-[9px] bg-blue-100 text-blue-700 font-extrabold px-2 py-0.5 rounded-full">Grup Eğitimi</span>
+          <h4 class="font-extrabold text-slate-800 text-sm">Mini Grup Seviye Sınıfı</h4>
+          <p class="text-[11px] text-slate-500 font-bold">8 Hafta - 2 Ay</p>
+          <p class="text-xs text-slate-600">Haftada 2 Ders (40 Dk) + Haftada 1 Speaking Club (35 Dk)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 4.500 TL <br><span class="text-[10px] text-slate-400 font-normal">Toplam: 9.000 TL</span></strong>
+            <button type="button" onclick="buyPackage(24, '9.000', 'Mini Grup Seviye Sınıfı')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <span class="text-[9px] bg-purple-100 text-purple-700 font-extrabold px-2 py-0.5 rounded-full">Seviye Sınıfı</span>
+          <h4 class="font-extrabold text-slate-800 text-sm">A2 Seviye</h4>
+          <p class="text-[11px] text-slate-500 font-bold">12 Hafta - 3 Ay</p>
+          <p class="text-xs text-slate-600">Haftada 2 Ders (40 Dk) + Haftada 1 Speaking Club (35 Dk)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 7.000 TL <br><span class="text-[10px] text-slate-400 font-normal">Toplam: 21.000 TL</span></strong>
+            <button type="button" onclick="buyPackage(36, '21.000', 'A2 Seviye')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <span class="text-[9px] bg-orange-100 text-orange-700 font-extrabold px-2 py-0.5 rounded-full">Seviye Sınıfı</span>
+          <h4 class="font-extrabold text-slate-800 text-sm">B1 Seviye</h4>
+          <p class="text-[11px] text-slate-500 font-bold">12 Hafta - 3 Ay</p>
+          <p class="text-xs text-slate-600">Haftada 2 Ders (40 Dk) + Haftada 2 Speaking Club (35 Dk)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 8.000 TL <br><span class="text-[10px] text-slate-400 font-normal">Toplam: 24.000 TL</span></strong>
+            <button type="button" onclick="buyPackage(48, '24.000', 'B1 Seviye')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <h4 class="font-extrabold text-slate-800 text-sm">Sadece Speaking Club Üyeliği</h4>
+          <p class="text-[11px] text-slate-500">İngilizce biliyorum ama konuşamıyorum, belirli seviyede eğitim aldım ve pratiğimi geliştirmek istiyorum diyenler için.</p>
+          <p class="text-xs text-slate-600 font-bold">Haftada 2 Gün (35 Dk)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 3.500 TL</strong>
+            <button type="button" onclick="buyPackage(8, '3.500', 'Sadece Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <h4 class="font-extrabold text-slate-800 text-sm">Seviye Üyeliklerine Ek Speaking Club</h4>
+          <p class="text-[11px] text-slate-500">Kur planında eğitim alanlar için programlarına ek olarak 1 Ders speaking club dahil etmek isteyenlere yönelik.</p>
+          <p class="text-xs text-slate-600 font-bold">Ders Planlarına +1 Ders</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 2.000 TL</strong>
+            <button type="button" onclick="buyPackage(4, '2.000', 'Ek Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+          <h4 class="font-extrabold text-slate-800 text-sm">Canlı Tut Speaking Club</h4>
+          <p class="text-[11px] text-slate-500">Belirli bir seviyede dil öğrenimini tamamlamış lakin dil becerilerini aktif tutmaya çalışanlar için.</p>
+          <p class="text-xs text-slate-600 font-bold">Haftada 1 Ders (40 Dakika)</p>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+            <strong class="text-xs font-bold text-teal-700">Aylık 1.500 TL</strong>
+            <button type="button" onclick="buyPackage(4, '1.500', 'Canlı Tut Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
+          </div>
+        </div>
+
+        <div class="bg-red-50 text-red-700 p-3 rounded-2xl text-[10px] font-bold border border-red-100 mt-2 text-center">
+          ⚠️ Not: Alınan ders randevuları 12 saat önceden iptal edilmezse ders hakkı yanar.
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- FIREBASE VE MANTIK KODLARI -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC68t9hhWe3al_N8Vt0LDzVUH7Nyvk-MqE", authDomain: "uygulama2-cb406.firebaseapp.com", projectId: "uygulama2-cb406",
+      storageBucket: "uygulama2-cb406.firebasestorage.app", messagingSenderId: "712532420487", appId: "1:712532420487:web:8ea9a509ae339ae2b7d522"
+    };
+
+    const app = initializeApp(firebaseConfig); 
+    const auth = getAuth(app); 
+    const db = getFirestore(app);
+
+    let currentUserData = null; let selectedStudentForAssign = null; let selectedDay = 28; let isRegisterMode = false;
+    let globalData = { slots: [], appointments: [], chatMessages: [], usersProgress: {}, materials: [] };
+    window.pendingPurchase = null;
+
+    window.toggleExpand = (id) => {
+      const el = document.getElementById(id);
+      el.classList.toggle('expanded');
+    };
+
+    window.toggleAuthMode = () => {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('auth-title').innerText = isRegisterMode ? "Kayıt Ol" : "Hoş Geldiniz";
+      document.getElementById('authSubmitBtn').innerText = isRegisterMode ? "Hesap Oluştur" : "Giriş Yap";
+      document.getElementById('authToggleBtn').innerText = isRegisterMode ? "Giriş Yap" : "Kayıt Ol";
+      document.getElementById('register-role-box').classList.toggle('hidden');
+    };
+
+    window.handleAuthAction = () => {
+      const email = document.getElementById('authEmail').value.trim(); const password = document.getElementById('authPassword').value;
+      if (!email || !password) return;
+      if (isRegisterMode) createUserWithEmailAndPassword(auth, email, password);
+      else signInWithEmailAndPassword(auth, email, password);
+    };
+
+    window.handleLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        let role = 'student';
+        if (user.email.includes('admin') || user.email.includes('hoca') || user.email.includes('teacher')) role = 'teacher';
+        else if (isRegisterMode) role = document.getElementById('authRoleSelect').value;
+
+        currentUserData = { email: user.email, role: role };
+        document.getElementById('auth-container').classList.add('hidden'); 
+        document.getElementById('app-container').classList.remove('hidden'); document.getElementById('app-container').classList.add('flex');
+        
+        applyRole(role); startRealtimeSync();
+      } else {
+        currentUserData = null; document.getElementById('auth-container').classList.remove('hidden'); document.getElementById('app-container').classList.add('hidden');
+      }
+    });
+
+    function startRealtimeSync() {
+      onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
+        if (snapshot.exists()) {
+          globalData = snapshot.data();
+          if(!globalData.usersProgress) globalData.usersProgress = {};
+          if(!globalData.materials) globalData.materials = [];
+          if(!globalData.slots) globalData.slots = [];
+          if(!globalData.appointments) globalData.appointments = [];
+          
+          if (currentUserData.role === 'student' && !globalData.usersProgress[currentUserData.email]) {
+            globalData.usersProgress[currentUserData.email] = { completed: 0, total: 10, remainingRights: 10 };
+            syncDataToFirebase();
+          } else renderUI();
+        } else setDoc(doc(db, "appData", "globalState"), globalData);
+      });
+    }
+
+    function syncDataToFirebase() { setDoc(doc(db, "appData", "globalState"), globalData); }
+
+    function applyRole(role) {
+      document.getElementById('student-dashboard-view').classList.add('hidden');
+      document.getElementById('teacher-dashboard-view').classList.add('hidden');
+      document.getElementById('teacher-slot-create-card').classList.add('hidden');
+      document.getElementById('student-materials-view').classList.add('hidden');
+      document.getElementById('teacher-students-view').classList.add('hidden');
+      
+      document.getElementById('btn-homework').innerText = role === 'teacher' ? '👩‍🎓 Öğrenciler & Ödev' : '📚 Ödev & Materyal';
+
+      if (role === 'student') {
+        document.getElementById('student-dashboard-view').classList.remove('hidden');
+        document.getElementById('student-materials-view').classList.remove('hidden');
+      } else {
+        document.getElementById('teacher-dashboard-view').classList.remove('hidden');
+        document.getElementById('teacher-slot-create-card').classList.remove('hidden');
+        document.getElementById('teacher-students-view').classList.remove('hidden');
+      }
+      window.switchTab('dashboard');
+    }
+
+    window.switchTab = (tabName) => {
+      ['dashboard', 'calendar', 'homework', 'chat', 'shop'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('btn-' + t).classList.remove('bg-cyan-500', 'text-white'); document.getElementById('btn-' + t).classList.add('bg-slate-100');
+      });
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      document.getElementById('btn-' + tabName).classList.remove('bg-slate-100'); document.getElementById('btn-' + tabName).classList.add('bg-cyan-500', 'text-white');
+    }
+
+    function renderUI() {
+      if (!currentUserData) return;
+
+      if (currentUserData.role === 'student') {
+        const myApps = globalData.appointments.filter(a => a.student === currentUserData.email);
+        const appBox = document.getElementById('st-dash-appointments');
+        if (myApps.length > 0) {
+          appBox.innerHTML = myApps.map(a => `<div class="p-2 bg-slate-50 border border-slate-100 rounded-lg"><strong>${a.date}</strong> - ${a.time}</div>`).join('');
+          document.getElementById('st-dash-warning').classList.add('hidden');
+        } else {
+          appBox.innerHTML = '<p class="text-slate-400 italic">Planlanmış dersiniz yok.</p>';
+          document.getElementById('st-dash-warning').classList.remove('hidden');
+        }
+
+        const lastMsg = globalData.chatMessages[globalData.chatMessages.length - 1];
+        const stChatDetail = document.getElementById('st-chat-detail');
+        if (!lastMsg) {
+          document.getElementById('st-dash-chat-status').innerHTML = '<span class="text-slate-400">Henüz soru sormadınız.</span>';
+          stChatDetail.innerHTML = "Hiç mesaj geçmişiniz bulunmuyor.";
+        } else {
+          const isStudentMsg = lastMsg.senderRole === 'student';
+          document.getElementById('st-dash-chat-status').innerHTML = isStudentMsg ? '<span class="text-amber-600">⏳ Sorun cevap bekliyor</span>' : '<span class="text-emerald-600">✅ Sorun cevaplandı</span>';
+          stChatDetail.innerHTML = `<strong>${isStudentMsg ? 'Senin Sorun:' : 'Hocanın Yanıtı:'}</strong> "${lastMsg.text}"`;
+        }
+
+        const myMaterials = globalData.materials.filter(m => m.studentEmail === currentUserData.email);
+        const stHwDetail = document.getElementById('st-hw-detail');
+        if (myMaterials.length === 0) {
+          document.getElementById('st-dash-hw-status').innerHTML = '<span class="text-slate-400">Şu an atanmış materyalin yok.</span>';
+          stHwDetail.innerHTML = "Tüm ödevlerini tamamladın veya henüz hocan ödev/materyal atamadı.";
+        } else {
+          const pending = myMaterials.filter(m => m.status === 'pending');
+          const submitted = myMaterials.filter(m => m.status === 'submitted');
+          if (pending.length > 0) document.getElementById('st-dash-hw-status').innerHTML = `<span class="text-red-600">📚 ${pending.length} Yeni Görevin Var!</span>`;
+          else if (submitted.length > 0) document.getElementById('st-dash-hw-status').innerHTML = `<span class="text-amber-600">⏳ Ödevin Gönderildi (Kontrol Bekliyor)</span>`;
+          else document.getElementById('st-dash-hw-status').innerHTML = '<span class="text-emerald-600">✅ Tüm Görevler Tamamlandı</span>';
+          
+          stHwDetail.innerHTML = `<div class="space-y-2 mt-1 max-h-32 overflow-y-auto pr-1">` + myMaterials.slice(-3).reverse().map(m => `
+            <div class="p-2 border rounded-lg bg-white shadow-sm text-left">
+              <strong class="text-slate-800 text-[10px]">${m.title} <span class="text-[8px] uppercase bg-slate-100 px-1 rounded">${m.type}</span></strong>
+              <div class="mt-1 text-[9px]">
+                ${m.status === 'pending' ? `<span class="text-red-500 font-bold">❌ Yapılmadı / Bekliyor</span>` :
+                  m.status === 'submitted' ? `<span class="text-amber-500 font-bold">⏳ İletildi:</span> <span class="italic text-slate-600">${m.studentAnswer}</span>` :
+                  `<span class="text-emerald-500 font-bold">✅ Onaylandı / Tamamlandı</span>`}
+              </div>
+            </div>
+          `).join('') + `</div>`;
+        }
+
+        const p = globalData.usersProgress[currentUserData.email];
+        if (p) {
+          document.getElementById('st-dash-completed').innerText = p.completed;
+          document.getElementById('st-dash-total').innerText = p.total;
+        }
+        const linkBtn = document.getElementById('studentLiveLink');
+        const nextApp = myApps[0];
+        if (nextApp && nextApp.liveLink) { linkBtn.href = nextApp.liveLink; linkBtn.innerText = "🚀 DERSE BAĞLAN"; } 
+        else { linkBtn.href = "#"; linkBtn.innerText = "⏳ LİNK BEKLENİYOR"; }
+      }
+
+      if (currentUserData.role === 'teacher') {
+        document.getElementById('tc-dash-appointments').innerHTML = globalData.appointments.length === 0 ? '<p class="text-slate-400">Randevu yok</p>' : globalData.appointments.map(a => `<div class="p-2 bg-purple-50 rounded-lg border border-purple-100"><strong>${a.date} ${a.time}</strong><br>${a.student}</div>`).join('');
+        
+        const lastMsgTc = globalData.chatMessages[globalData.chatMessages.length - 1];
+        const unreplied = lastMsgTc && lastMsgTc.senderRole === 'student';
+        document.getElementById('tc-dash-chat-status').innerText = unreplied ? "⚠️ Yanıt bekleyen soru var!" : "✅ Tüm sorular yanıtlandı.";
+        document.getElementById('tc-chat-detail').innerHTML = lastMsgTc ? `<strong>Son Mesaj (${lastMsgTc.senderEmail.split('@')[0]}):</strong> "${lastMsgTc.text}"` : 'Soru paneli boş.';
+
+        const pendingHws = globalData.materials.filter(m => m.status === 'submitted');
+        document.getElementById('tc-dash-hw-status').innerText = pendingHws.length > 0 ? `⚠️ ${pendingHws.length} adet ödev kontrol bekliyor!` : "✅ Kontrol bekleyen ödev yok.";
+        
+        document.getElementById('tc-hw-detail').innerHTML = pendingHws.length > 0 ? 
+          `<div class="space-y-2 mt-1 max-h-32 overflow-y-auto pr-1">` + pendingHws.map(m => `
+            <div class="p-2 border rounded-lg bg-white shadow-sm text-left">
+              <strong class="text-slate-800">${m.studentEmail.split('@')[0]}</strong>: ${m.title}
+              <div class="mt-1 text-[9px] italic text-slate-600">Yanıt: ${m.studentAnswer}</div>
+            </div>
+          `).join('') + `</div>`
+          : 'Şu an tüm ödevler onaylı veya bekleyen yok.';
+
+        document.getElementById('tc-dash-link-add').innerHTML = globalData.appointments.map(a => `
+          <div class="flex gap-2 p-2 bg-slate-50 border rounded-lg items-center">
+            <div class="w-1/3 truncate"><strong>${a.time}</strong> - ${a.student.split('@')[0]}</div>
+            <input type="text" id="liveInput-${a.id}" value="${a.liveLink || ''}" placeholder="Link..." class="flex-1 px-2 py-1 border rounded outline-none">
+            <button onclick="updateLiveLink('${a.id}')" class="bg-purple-600 text-white px-2 py-1 rounded transition hover:bg-purple-700">Kaydet</button>
+          </div>
+        `).join('');
+      }
+
+      const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = '';
+      for (let day = 1; day <= 30; day++) {
+        const hasSlot = globalData.slots.some(s => String(s.day) === String(day) && !s.bookedBy);
+        let dayClass = `py-3 rounded-2xl relative cursor-pointer font-bold border transition ${String(selectedDay) === String(day) ? 'bg-cyan-500 text-white border-cyan-600 shadow-md transform scale-105' : 'bg-slate-50 text-slate-700'}`;
+        grid.innerHTML += `<div onclick="selectDay(${day})" class="${dayClass}">${day}${hasSlot ? '<span class="absolute bottom-1 w-2 h-2 bg-emerald-400 rounded-full left-[43%]"></span>' : ''}</div>`;
+      }
+      
+      document.getElementById('selected-day-title').innerText = selectedDay + " Kasım Slotları";
+      const daySlots = globalData.slots.filter(s => String(s.day) === String(selectedDay));
+      
+      document.getElementById('slots-container').innerHTML = daySlots.length === 0 ? '<p class="text-xs text-slate-400 italic">Bu güne henüz saat eklenmemiş.</p>' : daySlots.map(s => `
+        <div class="p-3 bg-slate-50 rounded-2xl flex justify-between items-center text-xs border border-slate-100">
+          <div><strong class="text-slate-800">${s.time}</strong><p class="text-[10px] text-slate-400">${s.bookedBy ? 'Dolu (' + s.bookedBy.split('@')[0] + ')' : '🟢 Müsait'}</p></div>
+          ${s.bookedBy 
+            ? '<span class="bg-slate-200 px-3 py-1.5 rounded-xl text-slate-500 font-bold">Alındı</span>' 
+            : (currentUserData.role === 'student' 
+                ? `<button type="button" onclick="window.bookSlot('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-sm cursor-pointer">Randevu Al</button>` 
+                : '<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded-full">Açık</span>')}
+        </div>
+      `).join('');
+
+      if (currentUserData.role === 'teacher') {
+        document.getElementById('teacher-students-list').innerHTML = Object.keys(globalData.usersProgress).map(email => {
+          const prog = globalData.usersProgress[email];
+          return `
+            <div onclick="selectStudentForAssign('${email}')" class="p-3 bg-slate-50 cursor-pointer rounded-2xl border flex justify-between items-center text-xs transition hover:bg-slate-100">
+              <div><strong class="text-slate-800">${email}</strong><p class="text-[10px] text-slate-500">İlerleme: ${prog.completed}/${prog.total}</p></div>
+              <button class="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-xl font-bold">Seç</button>
+            </div>
+          `;
+        }).join('');
+        
+        if (selectedStudentForAssign) {
+          const assigned = globalData.materials.filter(m => m.studentEmail === selectedStudentForAssign);
+          document.getElementById('teacher-assigned-list').innerHTML = assigned.length === 0 ? '<p class="italic text-slate-400">Henüz materyal atanmamış.</p>' : assigned.map(m => `
+            <div class="p-2 bg-white border rounded-lg flex justify-between items-center">
+              <div><strong>${m.type === 'homework'?'Ödev':'Materyal'}:</strong> ${m.title} <span class="text-[9px] text-slate-400 ml-2">(${m.status})</span></div>
+            </div>
+          `).reverse().join('');
+        }
+
+        const checkList = globalData.materials.filter(m => m.status === 'submitted');
+        if(checkList.length > 0) {
+           document.getElementById('teacher-students-list').innerHTML += `<h4 class="text-[10px] font-bold text-red-600 mt-4 uppercase">Bekleyen Ödev Kontrolleri</h4>` + checkList.map(m => `
+             <div class="p-3 bg-red-50 border border-red-100 rounded-2xl text-xs space-y-2">
+               <div><strong>Öğrenci:</strong> ${m.studentEmail} | <strong>Ödev:</strong> ${m.title}</div>
+               <div class="bg-white p-2 rounded border"><strong>Yanıt:</strong> ${m.studentAnswer}</div>
+               <button onclick="checkHomework('${m.id}')" class="w-full bg-emerald-500 text-white font-bold py-1.5 rounded-xl transition hover:bg-emerald-600">Kontrol Edildi İşaretle</button>
+             </div>
+           `).join('');
+        }
+      }
+
+      if (currentUserData.role === 'student') {
+        const myMaterials = globalData.materials.filter(m => m.studentEmail === currentUserData.email);
+        document.getElementById('student-materials-list').innerHTML = myMaterials.map(m => `
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 text-xs">
+            <div class="font-bold text-slate-800">${m.type === 'pdf' ? '📄' : m.type === 'video' ? '🎥' : '✍️'} ${m.title}</div>
+            <div class="text-[11px] text-slate-600 p-2 bg-white rounded-xl border break-all">${m.type === 'homework' ? m.link : `<a href="${m.link}" target="_blank" class="text-cyan-600 underline">Buraya tıklayarak görüntüle</a>`}</div>
+            
+            ${m.type === 'homework' && m.status === 'pending' ? `
+              <div class="flex gap-2 mt-2">
+                <input type="text" id="hw-answer-${m.id}" placeholder="Ödev yanıtınız..." class="flex-1 px-3 py-1.5 border rounded-xl outline-none">
+                <button onclick="submitHomework('${m.id}')" class="bg-cyan-500 text-white px-3 py-1.5 rounded-xl font-bold transition hover:bg-cyan-600">Gönder</button>
+              </div>
+            ` : m.type !== 'homework' && m.status === 'pending' ? `
+              <button onclick="markAsRead('${m.id}')" class="mt-2 bg-cyan-100 text-cyan-700 px-3 py-1.5 rounded-xl text-[10px] font-bold transition hover:bg-cyan-200 cursor-pointer">✅ Okudum / İzledim İşaretle</button>
+            ` : m.status === 'submitted' ? `<div class="text-amber-600 font-bold mt-2">⏳ Kontrol bekleniyor</div>` 
+              : m.status === 'checked' ? `<div class="text-emerald-600 font-bold mt-2">✅ Onaylandı / Tamamlandı</div>` : ''}
+          </div>
+        `).reverse().join('');
+      }
+
+      const chatContainer = document.getElementById('chat-messages-container');
+      chatContainer.innerHTML = globalData.chatMessages.map(m => {
+        const isMe = m.senderEmail === currentUserData.email;
+        return `<div class="flex ${isMe ? 'justify-end' : 'justify-start'}"><div class="${isMe ? 'bg-cyan-500 text-white' : 'bg-white text-slate-800 border'} p-3 rounded-2xl max-w-[85%]"><span class="block text-[9px] opacity-75 font-bold mb-0.5">${m.senderRole === 'teacher' ? 'Eğitmen' : 'Öğrenci'}</span>${m.text}</div></div>`;
+      }).join('');
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    window.selectDay = (day) => { selectedDay = day; renderUI(); };
+
+    window.bookSlot = function(slotId) {
+      if (!globalData.usersProgress) globalData.usersProgress = {};
+      if (!globalData.appointments) globalData.appointments = [];
+      if (!globalData.slots) globalData.slots = [];
+      
+      let p = globalData.usersProgress[currentUserData.email];
+      if (!p) { 
+        p = { completed: 0, total: 10, remainingRights: 10 }; 
+        globalData.usersProgress[currentUserData.email] = p; 
+      } else if (p.remainingRights === undefined || isNaN(p.remainingRights)) {
+        p.remainingRights = 10;
+      }
+      
+      if (p.remainingRights <= 0) {
+        alert('Yetersiz ders hakkı! Lütfen "Paketler" sekmesinden yeni paket alın.');
+        return;
+      }
+      
+      const slotIndex = globalData.slots.findIndex(s => String(s.id) === String(slotId));
+      
+      if (slotIndex !== -1) {
+        if (globalData.slots[slotIndex].bookedBy) { alert('Bu slot maalesef başka bir öğrenci tarafından alınmış.'); return; }
+
+        globalData.slots[slotIndex].bookedBy = currentUserData.email; 
+        globalData.usersProgress[currentUserData.email].remainingRights -= 1;
+        
+        globalData.appointments.push({ 
+          id: Date.now().toString(), student: currentUserData.email, teacher: globalData.slots[slotIndex].teacher, 
+          date: `2026-11-${globalData.slots[slotIndex].day}`, time: globalData.slots[slotIndex].time, liveLink: "" 
+        });
+        
+        syncDataToFirebase(); renderUI();
+        alert('Harika! Randevunuz başarıyla oluşturuldu. Özet sekmesinden takip edebilirsiniz.');
+      } else {
+        alert('Hata: Seçilen slot sistemde bulunamadı. Eğitmen tarafından silinmiş olabilir.');
+      }
+    };
+
+    window.createCustomSlot = () => {
+      const time = document.getElementById('newSlotTimeInput').value;
+      if (time) { 
+        globalData.slots.push({ id: Date.now().toString(), day: selectedDay, time: time, teacher: currentUserData.email, bookedBy: null }); 
+        syncDataToFirebase(); document.getElementById('newSlotTimeInput').value = ''; alert('Ders slotu başarıyla açıldı!');
+      }
+    };
+
+    window.updateLiveLink = (appId) => {
+      const link = document.getElementById(`liveInput-${appId}`).value;
+      const app = globalData.appointments.find(a => String(a.id) === String(appId));
+      if (app) { app.liveLink = link; syncDataToFirebase(); alert('Canlı ders linki eklendi!'); }
+    };
+
+    window.selectStudentForAssign = (email) => {
+      selectedStudentForAssign = email; document.getElementById('teacher-assign-panel').classList.remove('hidden'); 
+      document.getElementById('assign-target-email').innerText = email; renderUI(); 
+    };
+
+    window.assignMaterial = () => {
+      if (!selectedStudentForAssign) return alert("Lütfen önce bir öğrenci seçin!");
+      const type = document.getElementById('assignType').value; const title = document.getElementById('assignTitle').value; const link = document.getElementById('assignLink').value;
+      if(title && link) {
+        globalData.materials.push({ id: Date.now().toString(), studentEmail: selectedStudentForAssign, type: type, title: title, link: link, status: 'pending', studentAnswer: '' });
+        document.getElementById('assignTitle').value = ''; document.getElementById('assignLink').value = ''; 
+        syncDataToFirebase(); alert('Materyal / Ödev başarıyla gönderildi!');
+      } else { alert("Lütfen başlık ve dosya/link alanlarını doldurun."); }
+    };
+
+    window.submitHomework = (matId) => {
+      const answer = document.getElementById(`hw-answer-${matId}`).value;
+      const mat = globalData.materials.find(m => String(m.id) === String(matId));
+      if (mat && answer) { mat.status = 'submitted'; mat.studentAnswer = answer; syncDataToFirebase(); alert('Ödev yanıtı gönderildi!'); }
+      else { alert('Lütfen yanıtınızı yazın.'); }
+    };
+
+    window.markAsRead = (matId) => {
+      const mat = globalData.materials.find(m => String(m.id) === String(matId));
+      if (mat) { mat.status = 'checked'; syncDataToFirebase(); }
+    };
+
+    window.checkHomework = (matId) => {
+      const mat = globalData.materials.find(m => String(m.id) === String(matId));
+      if (mat) { mat.status = 'checked'; globalData.usersProgress[mat.studentEmail].completed += 1; syncDataToFirebase(); alert('Ödev kontrol edildi olarak işaretlendi!'); }
+    };
+
+    window.sendMessage = () => {
+      const text = document.getElementById('chatInputText').value.trim();
+      if (text) { globalData.chatMessages.push({ id: Date.now().toString(), senderRole: currentUserData.role, senderEmail: currentUserData.email, text: text }); document.getElementById('chatInputText').value = ''; syncDataToFirebase(); }
+    };
+
+    window.buyPackage = (amount, price, packageName) => {
+      window.pendingPurchase = { amount: amount };
+      document.getElementById('iyzico-modal').classList.remove('hidden');
+      document.getElementById('iyzico-package-name').innerText = packageName;
+      document.getElementById('iyzico-price').innerText = price + " TL";
+      document.getElementById('iyzico-btn-text').innerText = "Ödemeyi Tamamla";
+    };
+
+    window.closeIyzicoModal = () => {
+      document.getElementById('iyzico-modal').classList.add('hidden');
+      window.pendingPurchase = null;
+    };
+
+    window.simulateIyzicoPayment = () => {
+      if (!window.pendingPurchase) return;
+      const btnText = document.getElementById('iyzico-btn-text');
+      btnText.innerText = "İşleniyor (Lütfen Bekleyin)...";
+      
+      setTimeout(() => {
+        let p = globalData.usersProgress[currentUserData.email];
+        if (!p) { p = { completed: 0, total: 10, remainingRights: 0 }; globalData.usersProgress[currentUserData.email] = p; }
+        
+        p.remainingRights += window.pendingPurchase.amount; 
+        syncDataToFirebase(); 
+        
+        closeIyzicoModal();
+        alert('✅ Ödeme Başarılı! (İyzico Simülasyonu)\n\nSatın aldığınız ders hakları anında hesabınıza tanımlanmıştır. "Takvim & Slot" sekmesinden randevu alabilirsiniz.');
+      }, 1500);
+    };
+  </script>
+
+  <!-- DİNAMİK PWA LOGO VE KURULUM SCRIPT'İ -->
+  <script>
+    const svgLogo = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="%2306b6d4"/><text x="50%" y="53%" font-family="Arial, sans-serif" font-size="180" font-weight="900" fill="white" dominant-baseline="middle" text-anchor="middle">LCIE</text></svg>`;
+    document.getElementById('apple-icon').href = svgLogo;
+
+    const dynamicManifest = {
+      "name": "Let's Continue In English",
+      "short_name": "LCIE",
+      "description": "Canlı Eğitim Platformu",
+      "start_url": "./",
+      "display": "standalone",
+      "background_color": "#f8fafc",
+      "theme_color": "#06b6d4",
+      "icons": [
+        { "src": svgLogo, "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+        { "src": svgLogo, "sizes": "512x512", "type": "image/svg+xml" }
+      ]
+    };
+    
+    const stringManifest = JSON.stringify(dynamicManifest);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    document.head.appendChild(Object.assign(document.createElement('link'), {rel: 'manifest', href: URL.createObjectURL(blob)}));
+
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+        self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+        self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+      `;
+      const swBlob = new Blob([swCode], { type: 'text/javascript' });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+          .then(() => console.log('Mobil Uygulama Hazır! (Dinamik Logolu)'))
+          .catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
