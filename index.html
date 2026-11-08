@@ -16,7 +16,7 @@
   <style>
     .tab-btn:active, button:active { transform: scale(0.97); }
     .expandable-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease; }
-    .expanded { max-height: 350px; padding-top: 0.5rem; border-top: 1px solid #f1f5f9; margin-top: 0.5rem; } 
+    .expanded { max-height: 350px; padding-top: 0.5rem; border-top: 1px solid #f1f5f9; margin-top: 0.5rem; overflow-y: auto;} 
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col relative">
@@ -116,7 +116,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
               <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-2">📅 Güncel Randevularım</h4>
-              <div id="st-dash-appointments" class="space-y-2 text-xs"></div>
+              <div id="st-dash-appointments" class="space-y-2 text-xs max-h-40 overflow-y-auto pr-1"></div>
             </div>
             
             <div onclick="toggleExpand('st-chat-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center cursor-pointer hover:bg-slate-50 transition">
@@ -131,10 +131,10 @@
               <div id="st-hw-detail" class="expandable-detail text-[10px] text-slate-600"></div>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-1">📊 Aylık İlerleme</h4>
-              <h3 class="text-lg font-black text-slate-800 mb-2"><span id="st-dash-completed">0</span> / <span id="st-dash-total">10</span> Ders İşlendi</h3>
-              <div id="st-dash-warning" class="hidden text-[10px] font-bold text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">⚠️ Bu hafta ders işlemedik. Uygun randevunu oluştur!</div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
+              <h4 class="text-[10px] font-bold text-cyan-600 uppercase mb-1">📊 Kalan Ders Hakkım</h4>
+              <h3 class="text-lg font-black text-slate-800 mb-2"><span id="st-dash-rights">0</span> Ders</h3>
+              <div id="st-dash-warning" class="hidden text-[10px] font-bold text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">⚠️ Ders hakkınız kalmadı. Paket almalısınız.</div>
             </div>
           </div>
           <div class="bg-gradient-to-r from-teal-500 to-emerald-600 p-5 rounded-3xl shadow-md text-white text-center">
@@ -148,7 +148,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 sm:col-span-2">
               <h4 class="text-[10px] font-bold text-purple-700 uppercase mb-2">📅 Yaklaşan Öğrenci Randevuları</h4>
-              <div id="tc-dash-appointments" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
+              <div id="tc-dash-appointments" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs max-h-48 overflow-y-auto pr-1"></div>
             </div>
             
             <div onclick="toggleExpand('tc-chat-detail')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:bg-slate-50 transition">
@@ -165,7 +165,7 @@
           </div>
           <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
             <h4 class="text-[10px] font-bold text-slate-700 uppercase">🔗 Randevusu Gelen Öğrenciye Link Ekle</h4>
-            <div id="tc-dash-link-add" class="space-y-2 text-xs"></div>
+            <div id="tc-dash-link-add" class="space-y-2 text-xs max-h-40 overflow-y-auto pr-1"></div>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@
       <div id="tab-calendar" class="space-y-4 hidden">
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
           <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-            <span class="font-extrabold text-sm text-slate-800">Aylık Takvim Görünümü</span>
+            <span class="font-extrabold text-sm text-slate-800" id="calendar-month-title">Aylık Takvim Görünümü</span>
             <span class="text-[10px] font-bold text-emerald-600">🟢 = Müsait</span>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
@@ -208,8 +208,8 @@
 
         <div id="teacher-students-view" class="space-y-4 hidden">
           <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
-            <h4 class="text-xs font-bold text-purple-800 uppercase">👩‍🎓 Tüm Öğrencilerim & Durumları</h4>
-            <div id="teacher-students-list" class="space-y-2"></div>
+            <h4 class="text-xs font-bold text-purple-800 uppercase">👩‍🎓 Tüm Öğrencilerim</h4>
+            <div id="teacher-students-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
           </div>
           
           <div id="teacher-assign-panel" class="bg-purple-50 border border-purple-100 p-4 rounded-3xl space-y-3 hidden">
@@ -220,21 +220,24 @@
               </select>
               <input type="text" id="assignTitle" placeholder="Başlık" class="w-2/3 px-3 py-2 border rounded-xl text-xs outline-none">
             </div>
-            <input type="text" id="assignLink" placeholder="Dosya Linki veya Ödev Açıklaması" class="w-full px-3 py-2 border rounded-xl text-xs outline-none">
-            <button onclick="assignMaterial()" class="w-full bg-purple-600 text-white font-bold py-2 rounded-xl text-xs transition hover:bg-purple-700">🚀 Öğrenciye Gerçekten Gönder</button>
+            <input type="text" id="assignLink" placeholder="Dosya Linki veya Açıklama" class="w-full px-3 py-2 border rounded-xl text-xs outline-none">
+            <button onclick="assignMaterial()" class="w-full bg-purple-600 text-white font-bold py-2 rounded-xl text-xs transition hover:bg-purple-700">🚀 Öğrenciye Gönder</button>
             
             <div class="mt-4 border-t border-purple-200 pt-3">
               <h5 class="text-[10px] font-bold text-purple-800 uppercase mb-2">Bu Öğrenciye Atadığım Mevcut Materyaller:</h5>
-              <div id="teacher-assigned-list" class="space-y-2 text-xs"></div>
+              <div id="teacher-assigned-list" class="space-y-2 text-xs max-h-32 overflow-y-auto"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 4. 7/24 SORU PANELİ -->
+      <!-- 4. 7/24 SORU PANELİ (ÖZEL CHAT) -->
       <div id="tab-chat" class="space-y-4 hidden">
         <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[400px]">
-          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-100"><span class="font-bold text-xs text-slate-700">💬 Soru Akışı</span></div>
+          <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-100 flex justify-between items-center">
+            <span class="font-bold text-xs text-slate-700">💬 Soru Akışı</span>
+            <select id="teacherChatSelect" class="hidden text-xs border border-slate-200 rounded-lg px-2 py-1 outline-none text-purple-700 font-bold bg-white" onchange="renderUI()"></select>
+          </div>
           <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 bg-cyan-50/20 text-xs"></div>
           <div class="p-3 bg-white border-t flex gap-2">
             <input type="text" id="chatInputText" placeholder="Mesajınızı yazın..." class="flex-1 px-3 py-2 border rounded-2xl text-xs outline-none">
@@ -245,7 +248,6 @@
 
       <!-- 5. PAKETLER -->
       <div id="tab-shop" class="space-y-3 hidden">
-        
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
           <span class="text-[9px] bg-indigo-100 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full">Başlangıç Sınıfı</span>
           <h4 class="font-extrabold text-slate-800 text-sm">A1 Seviye</h4>
@@ -292,31 +294,11 @@
 
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
           <h4 class="font-extrabold text-slate-800 text-sm">Sadece Speaking Club Üyeliği</h4>
-          <p class="text-[11px] text-slate-500">İngilizce biliyorum ama konuşamıyorum, belirli seviyede eğitim aldım ve pratiğimi geliştirmek istiyorum diyenler için.</p>
+          <p class="text-[11px] text-slate-500">İngilizce biliyorum ama konuşamıyorum, pratiğimi geliştirmek istiyorum diyenler için.</p>
           <p class="text-xs text-slate-600 font-bold">Haftada 2 Gün (35 Dk)</p>
           <div class="flex justify-between items-center pt-2 border-t border-slate-50">
             <strong class="text-xs font-bold text-teal-700">Aylık 3.500 TL</strong>
             <button type="button" onclick="buyPackage(8, '3.500', 'Sadece Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
-          <h4 class="font-extrabold text-slate-800 text-sm">Seviye Üyeliklerine Ek Speaking Club</h4>
-          <p class="text-[11px] text-slate-500">Kur planında eğitim alanlar için programlarına ek olarak 1 Ders speaking club dahil etmek isteyenlere yönelik.</p>
-          <p class="text-xs text-slate-600 font-bold">Ders Planlarına +1 Ders</p>
-          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-            <strong class="text-xs font-bold text-teal-700">Aylık 2.000 TL</strong>
-            <button type="button" onclick="buyPackage(4, '2.000', 'Ek Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
-          <h4 class="font-extrabold text-slate-800 text-sm">Canlı Tut Speaking Club</h4>
-          <p class="text-[11px] text-slate-500">Belirli bir seviyede dil öğrenimini tamamlamış lakin dil becerilerini aktif tutmaya çalışanlar için.</p>
-          <p class="text-xs text-slate-600 font-bold">Haftada 1 Ders (40 Dakika)</p>
-          <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-            <strong class="text-xs font-bold text-teal-700">Aylık 1.500 TL</strong>
-            <button type="button" onclick="buyPackage(4, '1.500', 'Canlı Tut Speaking Club')" class="bg-emerald-600 text-white font-bold py-1.5 px-3 rounded-xl text-xs transition hover:bg-emerald-700">Satın Al</button>
           </div>
         </div>
 
@@ -343,14 +325,14 @@
     const auth = getAuth(app); 
     const db = getFirestore(app);
 
-    let currentUserData = null; let selectedStudentForAssign = null; let selectedDay = 28; let isRegisterMode = false;
+    let currentUserData = null; let selectedStudentForAssign = null; let isRegisterMode = false;
+    let selectedDay = new Date().getDate(); // Otomatik bugünü seçer
     let globalData = { slots: [], appointments: [], chatMessages: [], usersProgress: {}, materials: [] };
     window.pendingPurchase = null;
 
-    window.toggleExpand = (id) => {
-      const el = document.getElementById(id);
-      el.classList.toggle('expanded');
-    };
+    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+    window.toggleExpand = (id) => { document.getElementById(id).classList.toggle('expanded'); };
 
     window.toggleAuthMode = () => {
       isRegisterMode = !isRegisterMode;
@@ -393,9 +375,10 @@
           if(!globalData.materials) globalData.materials = [];
           if(!globalData.slots) globalData.slots = [];
           if(!globalData.appointments) globalData.appointments = [];
+          if(!globalData.chatMessages) globalData.chatMessages = [];
           
           if (currentUserData.role === 'student' && !globalData.usersProgress[currentUserData.email]) {
-            globalData.usersProgress[currentUserData.email] = { completed: 0, total: 10, remainingRights: 10 };
+            globalData.usersProgress[currentUserData.email] = { completed: 0, total: 10, remainingRights: 0 };
             syncDataToFirebase();
           } else renderUI();
         } else setDoc(doc(db, "appData", "globalState"), globalData);
@@ -431,23 +414,62 @@
       });
       document.getElementById('tab-' + tabName).classList.remove('hidden');
       document.getElementById('btn-' + tabName).classList.remove('bg-slate-100'); document.getElementById('btn-' + tabName).classList.add('bg-cyan-500', 'text-white');
+      if(tabName === 'chat' || tabName === 'calendar') renderUI();
     }
 
-    function renderUI() {
+    // RANDEVU İPTAL FONKSİYONU
+    window.cancelAppointment = (appId) => {
+      if(!confirm('Bu randevuyu iptal etmek istediğinize emin misiniz?')) return;
+      const appIndex = globalData.appointments.findIndex(a => String(a.id) === String(appId));
+      
+      if(appIndex > -1) {
+        const app = globalData.appointments[appIndex];
+        
+        // 1. Öğrencinin ders hakkını iade et
+        if(globalData.usersProgress[app.student]) {
+           globalData.usersProgress[app.student].remainingRights += 1;
+        }
+        
+        // 2. Takvimdeki slotu tekrar müsait hale getir
+        let slot = null;
+        if (app.slotId) {
+           slot = globalData.slots.find(s => String(s.id) === String(app.slotId));
+        } else {
+           slot = globalData.slots.find(s => s.time === app.time && s.bookedBy === app.student);
+        }
+        if(slot) slot.bookedBy = null;
+        
+        // 3. Randevuyu sil
+        globalData.appointments.splice(appIndex, 1);
+        syncDataToFirebase();
+        alert('✅ Randevu başarıyla iptal edildi. Ders hakkı iade edildi.');
+      }
+    };
+
+    window.renderUI = () => {
       if (!currentUserData) return;
 
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+
+      // ================= ÖĞRENCİ ÖZETİ =================
       if (currentUserData.role === 'student') {
         const myApps = globalData.appointments.filter(a => a.student === currentUserData.email);
         const appBox = document.getElementById('st-dash-appointments');
         if (myApps.length > 0) {
-          appBox.innerHTML = myApps.map(a => `<div class="p-2 bg-slate-50 border border-slate-100 rounded-lg"><strong>${a.date}</strong> - ${a.time}</div>`).join('');
-          document.getElementById('st-dash-warning').classList.add('hidden');
+          appBox.innerHTML = myApps.map(a => `
+            <div class="p-2 bg-slate-50 border border-slate-100 rounded-lg flex justify-between items-center">
+              <div><strong>${a.date}</strong> - ${a.time}</div>
+              <button onclick="cancelAppointment('${a.id}')" class="text-[10px] bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold transition hover:bg-red-200">İptal Et</button>
+            </div>
+          `).join('');
         } else {
           appBox.innerHTML = '<p class="text-slate-400 italic">Planlanmış dersiniz yok.</p>';
-          document.getElementById('st-dash-warning').classList.remove('hidden');
         }
 
-        const lastMsg = globalData.chatMessages[globalData.chatMessages.length - 1];
+        const myMsgs = globalData.chatMessages.filter(m => (m.threadEmail || (m.senderRole==='student'?m.senderEmail:'')) === currentUserData.email);
+        const lastMsg = myMsgs[myMsgs.length - 1];
         const stChatDetail = document.getElementById('st-chat-detail');
         if (!lastMsg) {
           document.getElementById('st-dash-chat-status').innerHTML = '<span class="text-slate-400">Henüz soru sormadınız.</span>';
@@ -469,86 +491,107 @@
           if (pending.length > 0) document.getElementById('st-dash-hw-status').innerHTML = `<span class="text-red-600">📚 ${pending.length} Yeni Görevin Var!</span>`;
           else if (submitted.length > 0) document.getElementById('st-dash-hw-status').innerHTML = `<span class="text-amber-600">⏳ Ödevin Gönderildi (Kontrol Bekliyor)</span>`;
           else document.getElementById('st-dash-hw-status').innerHTML = '<span class="text-emerald-600">✅ Tüm Görevler Tamamlandı</span>';
-          
-          stHwDetail.innerHTML = `<div class="space-y-2 mt-1 max-h-32 overflow-y-auto pr-1">` + myMaterials.slice(-3).reverse().map(m => `
-            <div class="p-2 border rounded-lg bg-white shadow-sm text-left">
-              <strong class="text-slate-800 text-[10px]">${m.title} <span class="text-[8px] uppercase bg-slate-100 px-1 rounded">${m.type}</span></strong>
-              <div class="mt-1 text-[9px]">
-                ${m.status === 'pending' ? `<span class="text-red-500 font-bold">❌ Yapılmadı / Bekliyor</span>` :
-                  m.status === 'submitted' ? `<span class="text-amber-500 font-bold">⏳ İletildi:</span> <span class="italic text-slate-600">${m.studentAnswer}</span>` :
-                  `<span class="text-emerald-500 font-bold">✅ Onaylandı / Tamamlandı</span>`}
-              </div>
-            </div>
-          `).join('') + `</div>`;
+          stHwDetail.innerHTML = `<div class="space-y-2 mt-1">` + myMaterials.slice(-3).reverse().map(m => `<div class="p-2 border rounded-lg bg-white shadow-sm text-left"><strong class="text-slate-800 text-[10px]">${m.title} <span class="text-[8px] uppercase bg-slate-100 px-1 rounded">${m.type}</span></strong></div>`).join('') + `</div>`;
         }
 
         const p = globalData.usersProgress[currentUserData.email];
         if (p) {
-          document.getElementById('st-dash-completed').innerText = p.completed;
-          document.getElementById('st-dash-total').innerText = p.total;
+          const rights = p.remainingRights || 0;
+          document.getElementById('st-dash-rights').innerText = rights;
+          if(rights <= 0) document.getElementById('st-dash-warning').classList.remove('hidden');
+          else document.getElementById('st-dash-warning').classList.add('hidden');
         }
+
         const linkBtn = document.getElementById('studentLiveLink');
         const nextApp = myApps[0];
         if (nextApp && nextApp.liveLink) { linkBtn.href = nextApp.liveLink; linkBtn.innerText = "🚀 DERSE BAĞLAN"; } 
         else { linkBtn.href = "#"; linkBtn.innerText = "⏳ LİNK BEKLENİYOR"; }
       }
 
+      // ================= EĞİTMEN ÖZETİ =================
       if (currentUserData.role === 'teacher') {
-        document.getElementById('tc-dash-appointments').innerHTML = globalData.appointments.length === 0 ? '<p class="text-slate-400">Randevu yok</p>' : globalData.appointments.map(a => `<div class="p-2 bg-purple-50 rounded-lg border border-purple-100"><strong>${a.date} ${a.time}</strong><br>${a.student}</div>`).join('');
+        document.getElementById('tc-dash-appointments').innerHTML = globalData.appointments.length === 0 ? '<p class="text-slate-400">Randevu yok</p>' : globalData.appointments.map(a => `
+          <div class="p-2 bg-purple-50 rounded-lg border border-purple-100 flex justify-between items-center">
+            <div><strong>${a.date} ${a.time}</strong><br>${a.student.split('@')[0]}</div>
+            <button onclick="cancelAppointment('${a.id}')" class="text-[10px] bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold transition hover:bg-red-200">İptal Et</button>
+          </div>
+        `).join('');
         
-        const lastMsgTc = globalData.chatMessages[globalData.chatMessages.length - 1];
-        const unreplied = lastMsgTc && lastMsgTc.senderRole === 'student';
-        document.getElementById('tc-dash-chat-status').innerText = unreplied ? "⚠️ Yanıt bekleyen soru var!" : "✅ Tüm sorular yanıtlandı.";
-        document.getElementById('tc-chat-detail').innerHTML = lastMsgTc ? `<strong>Son Mesaj (${lastMsgTc.senderEmail.split('@')[0]}):</strong> "${lastMsgTc.text}"` : 'Soru paneli boş.';
+        let unrepliedChats = [];
+        Object.keys(globalData.usersProgress).forEach(email => {
+            const studentMsgs = globalData.chatMessages.filter(m => (m.threadEmail || (m.senderRole==='student'?m.senderEmail:'')) === email);
+            const last = studentMsgs[studentMsgs.length - 1];
+            if (last && last.senderRole === 'student') unrepliedChats.push(email.split('@')[0]);
+        });
+        document.getElementById('tc-dash-chat-status').innerText = unrepliedChats.length > 0 ? "⚠️ Yanıt bekleyen soru var!" : "✅ Tüm sorular yanıtlandı.";
+        document.getElementById('tc-chat-detail').innerHTML = unrepliedChats.length > 0 ? `<strong>Bekleyenler:</strong> ${unrepliedChats.join(', ')}` : 'Soru paneli boş.';
 
         const pendingHws = globalData.materials.filter(m => m.status === 'submitted');
         document.getElementById('tc-dash-hw-status').innerText = pendingHws.length > 0 ? `⚠️ ${pendingHws.length} adet ödev kontrol bekliyor!` : "✅ Kontrol bekleyen ödev yok.";
         
-        document.getElementById('tc-hw-detail').innerHTML = pendingHws.length > 0 ? 
-          `<div class="space-y-2 mt-1 max-h-32 overflow-y-auto pr-1">` + pendingHws.map(m => `
-            <div class="p-2 border rounded-lg bg-white shadow-sm text-left">
-              <strong class="text-slate-800">${m.studentEmail.split('@')[0]}</strong>: ${m.title}
-              <div class="mt-1 text-[9px] italic text-slate-600">Yanıt: ${m.studentAnswer}</div>
-            </div>
-          `).join('') + `</div>`
-          : 'Şu an tüm ödevler onaylı veya bekleyen yok.';
-
         document.getElementById('tc-dash-link-add').innerHTML = globalData.appointments.map(a => `
           <div class="flex gap-2 p-2 bg-slate-50 border rounded-lg items-center">
-            <div class="w-1/3 truncate"><strong>${a.time}</strong> - ${a.student.split('@')[0]}</div>
-            <input type="text" id="liveInput-${a.id}" value="${a.liveLink || ''}" placeholder="Link..." class="flex-1 px-2 py-1 border rounded outline-none">
-            <button onclick="updateLiveLink('${a.id}')" class="bg-purple-600 text-white px-2 py-1 rounded transition hover:bg-purple-700">Kaydet</button>
+            <div class="w-1/3 truncate text-[10px]"><strong>${a.time}</strong> - ${a.student.split('@')[0]}</div>
+            <input type="text" id="liveInput-${a.id}" value="${a.liveLink || ''}" placeholder="Link..." class="flex-1 px-2 py-1 border rounded outline-none text-[10px]">
+            <button onclick="updateLiveLink('${a.id}')" class="bg-purple-600 text-white px-2 py-1 rounded transition hover:bg-purple-700 text-[10px] font-bold">Kaydet</button>
           </div>
         `).join('');
       }
 
-      const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = '';
-      for (let day = 1; day <= 30; day++) {
-        const hasSlot = globalData.slots.some(s => String(s.day) === String(day) && !s.bookedBy);
+      // ================= DİNAMİK TAKVİM ÇİZİMİ =================
+      document.getElementById('calendar-month-title').innerText = `${monthNames[currentMonth]} ${currentYear}`;
+      document.getElementById('selected-day-title').innerText = `${selectedDay} ${monthNames[currentMonth]} Slotları`;
+      
+      const grid = document.getElementById('calendar-days-grid'); 
+      grid.innerHTML = '';
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+      const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; 
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      for(let i=0; i<startOffset; i++) { grid.innerHTML += `<div class="py-3"></div>`; }
+      for (let day = 1; day <= daysInMonth; day++) {
+        const hasSlot = globalData.slots.some(s => String(s.day) === String(day) && String(s.month) === String(currentMonth) && !s.bookedBy);
         let dayClass = `py-3 rounded-2xl relative cursor-pointer font-bold border transition ${String(selectedDay) === String(day) ? 'bg-cyan-500 text-white border-cyan-600 shadow-md transform scale-105' : 'bg-slate-50 text-slate-700'}`;
         grid.innerHTML += `<div onclick="selectDay(${day})" class="${dayClass}">${day}${hasSlot ? '<span class="absolute bottom-1 w-2 h-2 bg-emerald-400 rounded-full left-[43%]"></span>' : ''}</div>`;
       }
       
-      document.getElementById('selected-day-title').innerText = selectedDay + " Kasım Slotları";
-      const daySlots = globalData.slots.filter(s => String(s.day) === String(selectedDay));
+      const daySlots = globalData.slots.filter(s => String(s.day) === String(selectedDay) && String(s.month) === String(currentMonth));
       
-      document.getElementById('slots-container').innerHTML = daySlots.length === 0 ? '<p class="text-xs text-slate-400 italic">Bu güne henüz saat eklenmemiş.</p>' : daySlots.map(s => `
+      document.getElementById('slots-container').innerHTML = daySlots.length === 0 ? '<p class="text-xs text-slate-400 italic">Bu güne henüz saat eklenmemiş.</p>' : daySlots.map(s => {
+        let actionHtml = '';
+        if (s.bookedBy) {
+          // İptal Butonu Mantığı
+          if ((currentUserData.role === 'student' && s.bookedBy === currentUserData.email) || currentUserData.role === 'teacher') {
+             const app = globalData.appointments.find(a => a.slotId === s.id || (a.time === s.time && a.student === s.bookedBy));
+             const appId = app ? app.id : '';
+             actionHtml = `<button type="button" onclick="cancelAppointment('${appId}')" class="bg-red-100 text-red-600 px-3 py-1.5 rounded-xl font-bold transition hover:bg-red-200">İptal Et</button>`;
+          } else {
+             actionHtml = `<span class="bg-slate-200 px-3 py-1.5 rounded-xl text-slate-500 font-bold">Alındı</span>`;
+          }
+        } else {
+          // Müsait
+          if (currentUserData.role === 'student') {
+             actionHtml = `<button type="button" onclick="window.bookSlot('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-sm cursor-pointer">Randevu Al</button>`;
+          } else {
+             actionHtml = `<button type="button" onclick="deleteSlot('${s.id}')" class="bg-red-100 text-red-700 font-bold px-3 py-1.5 rounded-xl transition hover:bg-red-200">Sil</button>`;
+          }
+        }
+
+        return `
         <div class="p-3 bg-slate-50 rounded-2xl flex justify-between items-center text-xs border border-slate-100">
           <div><strong class="text-slate-800">${s.time}</strong><p class="text-[10px] text-slate-400">${s.bookedBy ? 'Dolu (' + s.bookedBy.split('@')[0] + ')' : '🟢 Müsait'}</p></div>
-          ${s.bookedBy 
-            ? '<span class="bg-slate-200 px-3 py-1.5 rounded-xl text-slate-500 font-bold">Alındı</span>' 
-            : (currentUserData.role === 'student' 
-                ? `<button type="button" onclick="window.bookSlot('${s.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-sm cursor-pointer">Randevu Al</button>` 
-                : '<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded-full">Açık</span>')}
+          ${actionHtml}
         </div>
-      `).join('');
+        `;
+      }).join('');
 
+      // ================= ÖĞRETMEN MATERYAL LİSTESİ =================
       if (currentUserData.role === 'teacher') {
         document.getElementById('teacher-students-list').innerHTML = Object.keys(globalData.usersProgress).map(email => {
           const prog = globalData.usersProgress[email];
           return `
             <div onclick="selectStudentForAssign('${email}')" class="p-3 bg-slate-50 cursor-pointer rounded-2xl border flex justify-between items-center text-xs transition hover:bg-slate-100">
-              <div><strong class="text-slate-800">${email}</strong><p class="text-[10px] text-slate-500">İlerleme: ${prog.completed}/${prog.total}</p></div>
+              <div><strong class="text-slate-800">${email}</strong><p class="text-[10px] text-slate-500">Kalan Ders: ${prog.remainingRights || 0}</p></div>
               <button class="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-xl font-bold">Seç</button>
             </div>
           `;
@@ -557,21 +600,10 @@
         if (selectedStudentForAssign) {
           const assigned = globalData.materials.filter(m => m.studentEmail === selectedStudentForAssign);
           document.getElementById('teacher-assigned-list').innerHTML = assigned.length === 0 ? '<p class="italic text-slate-400">Henüz materyal atanmamış.</p>' : assigned.map(m => `
-            <div class="p-2 bg-white border rounded-lg flex justify-between items-center">
+            <div class="p-2 bg-white border rounded-lg flex justify-between items-center text-[10px]">
               <div><strong>${m.type === 'homework'?'Ödev':'Materyal'}:</strong> ${m.title} <span class="text-[9px] text-slate-400 ml-2">(${m.status})</span></div>
             </div>
           `).reverse().join('');
-        }
-
-        const checkList = globalData.materials.filter(m => m.status === 'submitted');
-        if(checkList.length > 0) {
-           document.getElementById('teacher-students-list').innerHTML += `<h4 class="text-[10px] font-bold text-red-600 mt-4 uppercase">Bekleyen Ödev Kontrolleri</h4>` + checkList.map(m => `
-             <div class="p-3 bg-red-50 border border-red-100 rounded-2xl text-xs space-y-2">
-               <div><strong>Öğrenci:</strong> ${m.studentEmail} | <strong>Ödev:</strong> ${m.title}</div>
-               <div class="bg-white p-2 rounded border"><strong>Yanıt:</strong> ${m.studentAnswer}</div>
-               <button onclick="checkHomework('${m.id}')" class="w-full bg-emerald-500 text-white font-bold py-1.5 rounded-xl transition hover:bg-emerald-600">Kontrol Edildi İşaretle</button>
-             </div>
-           `).join('');
         }
       }
 
@@ -595,58 +627,64 @@
         `).reverse().join('');
       }
 
+      // ================= ÖZEL CHAT SİSTEMİ =================
+      let currentThread = null;
+      if (currentUserData.role === 'student') {
+        currentThread = currentUserData.email;
+      } else {
+        const tSelect = document.getElementById('teacherChatSelect');
+        tSelect.classList.remove('hidden');
+        const students = Object.keys(globalData.usersProgress);
+        if (tSelect.options.length !== (students.length === 0 ? 1 : students.length)) {
+            tSelect.innerHTML = students.length === 0 ? '<option value="">Öğrenci Bekleniyor</option>' : students.map(s => `<option value="${s}">${s.split('@')[0]}</option>`).join('');
+        }
+        currentThread = tSelect.value;
+      }
+
+      const filteredMessages = currentThread ? globalData.chatMessages.filter(m => (m.threadEmail || (m.senderRole==='student'?m.senderEmail:'')) === currentThread) : [];
       const chatContainer = document.getElementById('chat-messages-container');
-      chatContainer.innerHTML = globalData.chatMessages.map(m => {
+      chatContainer.innerHTML = filteredMessages.length === 0 ? '<p class="text-slate-400 italic text-center mt-4">Henüz mesaj yok...</p>' : filteredMessages.map(m => {
         const isMe = m.senderEmail === currentUserData.email;
         return `<div class="flex ${isMe ? 'justify-end' : 'justify-start'}"><div class="${isMe ? 'bg-cyan-500 text-white' : 'bg-white text-slate-800 border'} p-3 rounded-2xl max-w-[85%]"><span class="block text-[9px] opacity-75 font-bold mb-0.5">${m.senderRole === 'teacher' ? 'Eğitmen' : 'Öğrenci'}</span>${m.text}</div></div>`;
       }).join('');
       chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+    } 
 
     window.selectDay = (day) => { selectedDay = day; renderUI(); };
 
     window.bookSlot = function(slotId) {
-      if (!globalData.usersProgress) globalData.usersProgress = {};
-      if (!globalData.appointments) globalData.appointments = [];
-      if (!globalData.slots) globalData.slots = [];
-      
       let p = globalData.usersProgress[currentUserData.email];
-      if (!p) { 
-        p = { completed: 0, total: 10, remainingRights: 10 }; 
-        globalData.usersProgress[currentUserData.email] = p; 
-      } else if (p.remainingRights === undefined || isNaN(p.remainingRights)) {
-        p.remainingRights = 10;
-      }
-      
-      if (p.remainingRights <= 0) {
-        alert('Yetersiz ders hakkı! Lütfen "Paketler" sekmesinden yeni paket alın.');
-        return;
-      }
+      if (!p || p.remainingRights <= 0) return alert('Yetersiz ders hakkı! Lütfen "Paketler" sekmesinden yeni paket alın.');
       
       const slotIndex = globalData.slots.findIndex(s => String(s.id) === String(slotId));
-      
       if (slotIndex !== -1) {
-        if (globalData.slots[slotIndex].bookedBy) { alert('Bu slot maalesef başka bir öğrenci tarafından alınmış.'); return; }
+        if (globalData.slots[slotIndex].bookedBy) return alert('Bu slot maalesef alınmış.');
 
         globalData.slots[slotIndex].bookedBy = currentUserData.email; 
-        globalData.usersProgress[currentUserData.email].remainingRights -= 1;
+        p.remainingRights -= 1;
+        
+        const today = new Date();
+        const fullDateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(globalData.slots[slotIndex].day).padStart(2,'0')}`;
         
         globalData.appointments.push({ 
-          id: Date.now().toString(), student: currentUserData.email, teacher: globalData.slots[slotIndex].teacher, 
-          date: `2026-11-${globalData.slots[slotIndex].day}`, time: globalData.slots[slotIndex].time, liveLink: "" 
+          id: Date.now().toString(), slotId: slotId, student: currentUserData.email, teacher: globalData.slots[slotIndex].teacher, 
+          date: fullDateStr, time: globalData.slots[slotIndex].time, liveLink: "" 
         });
         
-        syncDataToFirebase(); renderUI();
-        alert('Harika! Randevunuz başarıyla oluşturuldu. Özet sekmesinden takip edebilirsiniz.');
-      } else {
-        alert('Hata: Seçilen slot sistemde bulunamadı. Eğitmen tarafından silinmiş olabilir.');
+        syncDataToFirebase(); 
+        alert('Harika! Randevunuz başarıyla oluşturuldu.');
       }
+    };
+
+    window.deleteSlot = (slotId) => {
+      globalData.slots = globalData.slots.filter(s => String(s.id) !== String(slotId));
+      syncDataToFirebase(); alert('Ders saati silindi.');
     };
 
     window.createCustomSlot = () => {
       const time = document.getElementById('newSlotTimeInput').value;
       if (time) { 
-        globalData.slots.push({ id: Date.now().toString(), day: selectedDay, time: time, teacher: currentUserData.email, bookedBy: null }); 
+        globalData.slots.push({ id: Date.now().toString(), day: selectedDay, month: new Date().getMonth(), time: time, teacher: currentUserData.email, bookedBy: null }); 
         syncDataToFirebase(); document.getElementById('newSlotTimeInput').value = ''; alert('Ders slotu başarıyla açıldı!');
       }
     };
@@ -663,20 +701,19 @@
     };
 
     window.assignMaterial = () => {
-      if (!selectedStudentForAssign) return alert("Lütfen önce bir öğrenci seçin!");
+      if (!selectedStudentForAssign) return alert("Öğrenci seçin!");
       const type = document.getElementById('assignType').value; const title = document.getElementById('assignTitle').value; const link = document.getElementById('assignLink').value;
       if(title && link) {
         globalData.materials.push({ id: Date.now().toString(), studentEmail: selectedStudentForAssign, type: type, title: title, link: link, status: 'pending', studentAnswer: '' });
         document.getElementById('assignTitle').value = ''; document.getElementById('assignLink').value = ''; 
-        syncDataToFirebase(); alert('Materyal / Ödev başarıyla gönderildi!');
-      } else { alert("Lütfen başlık ve dosya/link alanlarını doldurun."); }
+        syncDataToFirebase(); alert('Gönderildi!');
+      }
     };
 
     window.submitHomework = (matId) => {
       const answer = document.getElementById(`hw-answer-${matId}`).value;
       const mat = globalData.materials.find(m => String(m.id) === String(matId));
-      if (mat && answer) { mat.status = 'submitted'; mat.studentAnswer = answer; syncDataToFirebase(); alert('Ödev yanıtı gönderildi!'); }
-      else { alert('Lütfen yanıtınızı yazın.'); }
+      if (mat && answer) { mat.status = 'submitted'; mat.studentAnswer = answer; syncDataToFirebase(); }
     };
 
     window.markAsRead = (matId) => {
@@ -684,14 +721,18 @@
       if (mat) { mat.status = 'checked'; syncDataToFirebase(); }
     };
 
-    window.checkHomework = (matId) => {
-      const mat = globalData.materials.find(m => String(m.id) === String(matId));
-      if (mat) { mat.status = 'checked'; globalData.usersProgress[mat.studentEmail].completed += 1; syncDataToFirebase(); alert('Ödev kontrol edildi olarak işaretlendi!'); }
-    };
-
     window.sendMessage = () => {
       const text = document.getElementById('chatInputText').value.trim();
-      if (text) { globalData.chatMessages.push({ id: Date.now().toString(), senderRole: currentUserData.role, senderEmail: currentUserData.email, text: text }); document.getElementById('chatInputText').value = ''; syncDataToFirebase(); }
+      if (text) { 
+        let targetThread = currentUserData.email;
+        if(currentUserData.role === 'teacher') {
+            const select = document.getElementById('teacherChatSelect');
+            targetThread = select.value;
+            if(!targetThread) return alert("Lütfen mesajı göndereceğiniz öğrenciyi seçin.");
+        }
+        globalData.chatMessages.push({ id: Date.now().toString(), senderRole: currentUserData.role, senderEmail: currentUserData.email, threadEmail: targetThread, text: text }); 
+        document.getElementById('chatInputText').value = ''; syncDataToFirebase(); 
+      }
     };
 
     window.buyPackage = (amount, price, packageName) => {
@@ -702,10 +743,7 @@
       document.getElementById('iyzico-btn-text').innerText = "Ödemeyi Tamamla";
     };
 
-    window.closeIyzicoModal = () => {
-      document.getElementById('iyzico-modal').classList.add('hidden');
-      window.pendingPurchase = null;
-    };
+    window.closeIyzicoModal = () => { document.getElementById('iyzico-modal').classList.add('hidden'); window.pendingPurchase = null; };
 
     window.simulateIyzicoPayment = () => {
       if (!window.pendingPurchase) return;
@@ -715,12 +753,9 @@
       setTimeout(() => {
         let p = globalData.usersProgress[currentUserData.email];
         if (!p) { p = { completed: 0, total: 10, remainingRights: 0 }; globalData.usersProgress[currentUserData.email] = p; }
-        
         p.remainingRights += window.pendingPurchase.amount; 
-        syncDataToFirebase(); 
-        
-        closeIyzicoModal();
-        alert('✅ Ödeme Başarılı! (İyzico Simülasyonu)\n\nSatın aldığınız ders hakları anında hesabınıza tanımlanmıştır. "Takvim & Slot" sekmesinden randevu alabilirsiniz.');
+        syncDataToFirebase(); closeIyzicoModal();
+        alert('✅ Ödeme Başarılı! (İyzico Simülasyonu)\nSatın aldığınız ders hakları hesabınıza tanımlanmıştır.');
       }, 1500);
     };
   </script>
@@ -755,11 +790,7 @@
         self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
       `;
       const swBlob = new Blob([swCode], { type: 'text/javascript' });
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register(URL.createObjectURL(swBlob))
-          .then(() => console.log('Mobil Uygulama Hazır! (Dinamik Logolu)'))
-          .catch(console.error);
-      });
+      window.addEventListener('load', () => navigator.serviceWorker.register(URL.createObjectURL(swBlob)));
     }
   </script>
 </body>
